@@ -1,0 +1,9 @@
+---
+- name: Custom /etc/environment
+  ansible.builtin.lineinfile:
+    dest: /etc/environment
+    regexp: "{{ item.re }}"
+    line: "{{ item.l }}"
+    mode: "0644"
+    backup: "{{ hardennanokvm_backup | default(false) }}"
+  with_items: "{{ hardennanokvm_env }}"

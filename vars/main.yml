@@ -1,0 +1,7 @@
+---
+
+# S35iptables only supporting /etc/iptables.conf and no IPv6 file unless patched
+iptables_rulesv4: /etc/iptables.conf
+iptables_rulesv6: /etc/ip6tables.conf
+# iptables_rulesv4: /etc/iptables/rules.v4
+# iptables_rulesv6: /etc/iptables/rules.v6

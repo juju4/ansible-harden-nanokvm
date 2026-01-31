@@ -1,0 +1,40 @@
+---
+- name: Set fact is_container
+  ansible.builtin.set_fact:
+    is_container: true
+  when: >
+    (ansible_facts['virtualization_type'] is defined and
+      (ansible_facts['virtualization_type'] == "docker"
+       or ansible_facts['virtualization_type'] == "container"
+       or ansible_facts['virtualization_type'] == "containerd"
+      )
+    )
+
+- name: Import firewall
+  ansible.builtin.import_tasks: firewall.yml
+  when:
+    - hardennanokvm_fw_enable | bool
+
+- name: Import dns
+  ansible.builtin.import_tasks: dns.yml
+  when:
+    - hardennanokvm_dns_enable | bool
+
+- name: Import sshd
+  ansible.builtin.import_tasks: sshd.yml
+  when:
+    - hardennanokvm_sshd_enable | bool
+
+- name: Import defaultroute
+  ansible.builtin.import_tasks: defaultroute.yml
+  when:
+    - not hardennanokvm_defaultroute_enable | bool
+
+- name: Import network
+  ansible.builtin.import_tasks: network.yml
+
+- name: Import environment
+  ansible.builtin.import_tasks: environment.yml
+  when:
+    - hardennanokvm_proxy_enable | bool
+    - hardennanokvm_env | length > 0

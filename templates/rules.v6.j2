@@ -1,0 +1,78 @@
+{{ ansible_managed | comment }}
+
+#
+# NanoKVM ip6tables rules
+#
+
+*filter
+:INPUT {{ hardennanokvm_fw6_default }} [0:0]
+:FORWARD {{ hardennanokvm_fw6_default }} [0:0]
+:OUTPUT {{ hardennanokvm_fw6_default }} [0:0]
+-A INPUT -i lo -j ACCEPT
+-A OUTPUT -o lo -j ACCEPT
+-A INPUT -s ::1/128 ! -i lo -j DROP
+## Allow Link-Local addresses
+-A INPUT -s fe80::/10 -j ACCEPT
+-A OUTPUT -s fe80::/10 -j ACCEPT
+## Allow multicast
+-A INPUT -d ff00::/8 -j ACCEPT
+-A OUTPUT -d ff00::/8 -j ACCEPT
+-A OUTPUT -o eth0 -p udp --sport 68 -d {{ hardennanokvm_fw6_gw }} --dport 67 -j ACCEPT
+-A INPUT -m state --state NEW -m udp -p udp -s fe80::/10 --dport 546 -j ACCEPT
+-A INPUT -i eth0 -p tcp -m tcp --dport 80 -m state --state NEW,ESTABLISHED -j ACCEPT
+-A INPUT -i eth0 -p tcp -m tcp --dport 443 -m state --state NEW,ESTABLISHED -j ACCEPT
+# No IPv6 ssh by default
+-A INPUT -i eth0 -p tcp -m tcp --dport 22 -j DROP
+-A INPUT -i eth0 -p udp -m udp --dport 123 -j DROP
+-A OUTPUT -o eth0 -p tcp -m tcp --sport 80 -m state --state ESTABLISHED -j ACCEPT
+-A OUTPUT -o eth0 -p tcp -m tcp --sport 443 -m state --state ESTABLISHED -j ACCEPT
+-A OUTPUT -o eth0 -p tcp -m tcp --dport 22 -m state --state ESTABLISHED -j ACCEPT
+-A OUTPUT -o eth0 -p tcp -m tcp --sport 8000 -m state --state ESTABLISHED -j DROP
+-A OUTPUT -p tcp --dport 22 -j LOG --log-prefix "iptables denied: [ssh-out] "
+-A OUTPUT -p tcp -m tcp --dport 22 -j REJECT
+{% if hardennanokvm_fw6_dnsservers is defined and hardennanokvm_fw6_dnsservers | length > 0 %}
+{%     for host in hardennanokvm_fw6_dnsservers %}
+-A OUTPUT -p tcp -d {{ host }} --dport 53 -j ACCEPT
+-A OUTPUT -p udp -d {{ host }} --dport 53 -j ACCEPT
+{%     endfor %}
+{% endif %}
+-A OUTPUT -p udp --dport 123 -j ACCEPT
+## ICMP
+# Permit needed ICMP packet types for IPv6 per RFC 4890.
+-A INPUT              -p ipv6-icmp --icmpv6-type 1   -j ACCEPT
+-A INPUT              -p ipv6-icmp --icmpv6-type 2   -j ACCEPT
+-A INPUT              -p ipv6-icmp --icmpv6-type 3   -j ACCEPT
+-A INPUT              -p ipv6-icmp --icmpv6-type 4   -j ACCEPT
+-A INPUT              -p ipv6-icmp --icmpv6-type 128   -j ACCEPT
+-A INPUT              -p ipv6-icmp --icmpv6-type 133 -j ACCEPT
+-A INPUT              -p ipv6-icmp --icmpv6-type 134 -j ACCEPT
+-A INPUT              -p ipv6-icmp --icmpv6-type 135 -j ACCEPT
+-A INPUT              -p ipv6-icmp --icmpv6-type 136 -j ACCEPT
+-A INPUT              -p ipv6-icmp --icmpv6-type 137 -j ACCEPT
+-A INPUT              -p ipv6-icmp --icmpv6-type 141 -j ACCEPT
+-A INPUT              -p ipv6-icmp --icmpv6-type 142 -j ACCEPT
+-A INPUT -s fe80::/10 -p ipv6-icmp --icmpv6-type 130 -j ACCEPT
+-A INPUT -s fe80::/10 -p ipv6-icmp --icmpv6-type 131 -j ACCEPT
+-A INPUT -s fe80::/10 -p ipv6-icmp --icmpv6-type 132 -j ACCEPT
+-A OUTPUT -d fe80::/10 -p ipv6-icmp --icmpv6-type 136 -j ACCEPT -m comment --comment "Neighbor Advertisement"
+-A INPUT -s fe80::/10 -p ipv6-icmp --icmpv6-type 143 -j ACCEPT
+-A INPUT              -p ipv6-icmp --icmpv6-type 148 -j ACCEPT
+-A INPUT              -p ipv6-icmp --icmpv6-type 149 -j ACCEPT
+-A INPUT -s fe80::/10 -p ipv6-icmp --icmpv6-type 151 -j ACCEPT
+-A INPUT -s fe80::/10 -p ipv6-icmp --icmpv6-type 152 -j ACCEPT
+-A INPUT -s fe80::/10 -p ipv6-icmp --icmpv6-type 153 -j ACCEPT
+-A OUTPUT -p tcp --dport 25 -j DROP
+-A OUTPUT -p tcp --dport 587 -j DROP
+{% if hardennanokvm_fw_systemupdates_allow | bool %}
+# System updates? chetietupian.top, cdn.vansfans.cn, cdn.sipeed.com
+-A OUTPUT -o eth0 -p tcp -m tcp -d 2001:418:149c:1::240 --dport 443 -j ACCEPT
+-A OUTPUT -o eth0 -p tcp -m tcp -d 2001:418:149c:1::241 --dport 443 -j ACCEPT
+{% endif %}
+{% if hardennanokvm_fw_https_out_allow | bool %}
+-A OUTPUT -o eth0 -p tcp -m tcp --dport 443 -j LOG --log-prefix "iptables: [https-out] "
+-A OUTPUT -o eth0 -p tcp -m tcp --dport 443 -j ACCEPT
+{% endif %}
+-A OUTPUT -p tcp -m conntrack --ctstate ESTABLISHED -j ACCEPT
+-A INPUT -j LOG --log-prefix "iptables6: [NOMATCH] " --log-level 7
+-A OUTPUT -j LOG --log-prefix "iptables6: [NOMATCH] " --log-level 7
+COMMIT

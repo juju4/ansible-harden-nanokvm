@@ -1,0 +1,14 @@
+---
+- name: Converge
+  hosts: all
+  environment:
+    http_proxy: "{{ lookup('env', 'http_proxy') }}"
+    https_proxy: "{{ lookup('env', 'https_proxy') }}"
+    no_proxy: "{{ lookup('env', 'no_proxy') }}"
+  remote_user: root
+  pre_tasks:
+    - name: Debug | var ansible_facts['virtualization_type']
+      ansible.builtin.debug:
+        var: ansible_facts['virtualization_type']
+  roles:
+    - juju4.harden_nanokvm

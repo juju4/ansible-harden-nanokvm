@@ -1,0 +1,45 @@
+---
+- name: Configure sshd_config
+  ansible.builtin.template:
+    src: "{{ hardennanokvm_sshd_template }}"
+    dest: /etc/ssh/sshd_config
+    mode: "0600"
+    owner: "0"
+    group: "0"
+    backup: "{{ hardennanokvm_backup | default(false) }}"
+    validate: "{{ sshd_validate | default('sshd -f %s -T') }}"
+  notify:
+    - Restart sshd
+
+- name: Check /etc/ssh/moduli for weak values
+  ansible.builtin.shell: |
+    set -o pipefail
+    awk '$5 < 2047 && $5 ~ /^[0-9]+$/ { print $5 }' /etc/ssh/moduli | uniq | wc -c
+  args:
+    executable: /bin/bash
+  changed_when: false
+  register: moduli
+
+- name: Ssh moduli
+  when: moduli.stdout | int != 0
+  block:
+    - name: Clean /etc/ssh/moduli # noqa no-free-form
+      # just remove weak ones
+      ansible.builtin.shell: |
+        set -o pipefail
+        awk '$5 >= 2000' /etc/ssh/moduli > /etc/ssh/moduli.strong
+      args:
+        executable: /bin/bash
+        creates: /etc/ssh/moduli.strong
+    - name: Use /etc/ssh/moduli.strong
+      # re-generate. much longer
+      # shell: >
+      #   ssh-keygen -G /etc/ssh/moduli.all -b 4096 &&
+      #   ssh-keygen -T /etc/ssh/moduli.safe -f /etc/ssh/moduli.all &&
+      #   mv /etc/ssh/moduli.safe /etc/ssh/moduli"
+      ansible.builtin.copy:
+        src: /etc/ssh/moduli.strong
+        dest: /etc/ssh/moduli
+        mode: "0644"
+        remote_src: true
+        backup: "{{ hardennanokvm_backup | default(false) }}"

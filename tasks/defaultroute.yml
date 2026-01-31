@@ -1,0 +1,19 @@
+---
+- name: Ensure /etc/udhcpc directory exists
+  ansible.builtin.file:
+    path: /etc/udhcpc
+    state: directory
+    mode: "0755"
+
+# https://unix.stackexchange.com/questions/182967/can-i-prevent-a-default-route-being-added-when-bringing-up-an-interface NO_GATEWAT
+# https://lists.openembedded.org/g/openembedded-core/message/70826 INSTALL_DEFAULT_ROUTE
+# none in https://github.com/mirror/busybox/blob/master/networking/udhcp/dhcpc.c
+# NOK
+- name: Add NO_GATEWAY option to dhcp config - no default route
+  ansible.builtin.lineinfile:
+    path: /etc/udhcpc/udhcpc.conf
+    regexp: "^NO_GATEWAY=.*"
+    line: 'NO_GATEWAY="eth0"'
+    mode: "0644"
+    create: true
+    backup: "{{ hardennanokvm_backup | default(false) }}"

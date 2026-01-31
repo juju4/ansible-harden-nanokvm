@@ -1,0 +1,49 @@
+---
+
+hardennanokvm_fw_enable: true
+hardennanokvm_fw_default: ACCEPT
+# hardennanokvm_fw_default: DROP
+hardennanokvm_fw_gw: "{{ ansible_facts['default_ipv4'].gateway }}"
+hardennanokvm_fw_template_v4: rules.v4.j2
+hardennanokvm_fw6_enable: true
+hardennanokvm_fw6_default: ACCEPT
+hardennanokvm_fw6_gw: "{{ ansible_facts['default_ipv6'].gateway }}"
+hardennanokvm_fw_template_v6: rules.v6.j2
+hardennanokvm_dns_enable: true
+hardennanokvm_fw_dnsservers:
+  - 1.1.1.1
+  - 8.8.8.8
+  - 9.9.9.9
+hardennanokvm_fw6_dnsservers:
+  - 2606:4700:4700::1111
+  - 2001:4860:4860::8888
+  - 2620:fe::fe
+hardennanokvm_fw_systemupdates_allow: true
+hardennanokvm_fw_https_out_allow: true
+
+hardennanokvm_sshd_enable: true
+hardennanokvm_sshd_template: sshd_config.j2
+
+# if false, remove dhcp option or post net if-up
+# hardennanokvm_defaultroute_enable: true
+# dhcp or fixed IP address (with or without default route)
+hardennanokvm_dhcp_enable: true
+hardennanokvm_net_ip: "{{ ansible_facts['default_ipv4'].address | default(ansible_facts.eth0.ipv4.address) }}"
+hardennanokvm_network: "{{ ansible_facts['default_ipv4'].network | default(ansible_facts.eth0.ipv4.network) }}"
+hardennanokvm_netmask: "{{ ansible_facts['default_ipv4'].netmask | default(ansible_facts.eth0.ipv4.netmask) }}"
+hardennanokvm_prefix: "{{ ansible_facts['default_ipv4'].prefix | default(ansible_facts.eth0.ipv4.prefix) }}"
+hardennanokvm_broadcast: "{{ ansible_facts['default_ipv4'].broadcast | default(ansible_facts.eth0.ipv4.broadcast) }}"
+nardennanokvm_gw:
+# https://github.com/sipeed/NanoKVM/issues/695
+# https://github.com/gorilla/websocket/issues/475#issuecomment-458602357 (supported)
+# https://github.com/pion/webrtc/issues/3094 (use ice-tcp or turn-tcp)
+hardennanokvm_proxy_enable: false
+hardennanokvm_proxy_url: http://192.168.1.1:3128
+hardennanokvm_env:
+  - { re: ^http_proxy=.*, l: "http_proxy={{ hardennanokvm_proxy_url }}" }
+  - { re: ^https_proxy=.*, l: "https_proxy={{ hardennanokvm_proxy_url }}" }
+  - { re: ^no_proxy=.*, l: "no_proxy={{ hardennanokvm_no_proxy | default('127.0.0.1,::1,localhost,10.0.0.0/8,192.168.0.0/16') }}" }
+
+hardennanokvm_backup: true
+
+is_container: false

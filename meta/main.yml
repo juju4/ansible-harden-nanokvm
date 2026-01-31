@@ -1,0 +1,17 @@
+---
+galaxy_info:
+  role_name: harden_nanokvm
+  author: juju4
+  description: Hardening Sipeed NanoKVM ansible role
+  license: BSD
+  min_ansible_version: "13"
+  platforms: []
+  # - name: NanoKVM  # not recognized
+  galaxy_tags:
+    - system
+    - iptables
+    - dns
+    - ssh
+dependencies: []
+collections:
+  - ansible.posix

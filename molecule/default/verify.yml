@@ -1,0 +1,43 @@
+---
+- name: Verify
+  hosts: "{{ playbook_hosts | default('all') }}"
+  vars:
+    hardennanokvm_fw_dnsservers:
+      - 1.1.1.1
+      - 8.8.8.8
+      - 9.9.9.9
+    hardennanokvm_fw6_dnsservers:
+      - 2606:4700:4700::1111
+      - 2001:4860:4860::8888
+      - 2620:fe::fe
+    iptables_rulesv4: /etc/iptables.conf
+    iptables_rulesv6: /etc/ip6tables.conf
+  tasks:
+    - name: Fetch content /etc/resolv.conf
+      ansible.builtin.slurp:
+        src: /etc/resolv.conf
+      register: dns
+    - name: Validate nameservers
+      ansible.builtin.assert:
+        that:
+          - "item in dns['content'] | b64decode"
+      loop: "{{ hardennanokvm_fw_dnsservers + hardennanokvm_fw6_dnsservers }}"
+
+    - name: Fetch content /etc/ssh/sshd_config
+      ansible.builtin.slurp:
+        src: /etc/ssh/sshd_config
+      register: sshd
+    - name: Validate sshd_config
+      ansible.builtin.assert:
+        that:
+          - "'PermitRootLogin without-password' in sshd['content'] | b64decode"
+
+    - name: Fetch content iptables rules
+      ansible.builtin.slurp:
+        src: "{{ iptables_rulesv4 }}"
+      register: rulesv4
+    - name: Validate iptables rules
+      ansible.builtin.assert:
+        that:
+          - "'-A INPUT -s 127.0.0.0/8 -j DROP' in rulesv4['content'] | b64decode"
+          - "'-A OUTPUT -p tcp --dport 25 -j DROP' in rulesv4['content'] | b64decode"

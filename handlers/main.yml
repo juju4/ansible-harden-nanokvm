@@ -1,0 +1,52 @@
+---
+- name: Mirror /boot/resolv.conf to /etc/resolv.conf
+  ansible.builtin.copy:
+    src: /boot/resolv.conf
+    dest: /etc/resolv.conf
+    mode: "0644"
+    owner: "0"
+    group: "0"
+    backup: "{{ hardennanokvm_backup | default(false) }}"
+    remote_src: true
+
+- name: Restart network
+  ansible.builtin.service:
+    name: S40network
+    state: restarted
+  when:
+    - not is_container | bool
+
+- name: Reload systemd
+  ansible.builtin.systemd:
+    daemon_reload: true
+  when:
+    - not is_container | bool
+
+- name: Restart sshd
+  ansible.builtin.service:
+    name: S50sshd
+    state: "restarted"
+  when:
+    - not is_container | bool
+    # if root connection, will lose it and playbook failed
+    - false
+
+- name: Ensure iptables v4 rules are correct
+  ansible.builtin.shell: "iptables-restore -tv < {{ iptables_rulesv4 }}"
+  changed_when: false
+  when:
+    - not is_container | bool
+
+- name: Ensure ip6tables rules are correct
+  ansible.builtin.shell: "ip6tables-restore -tv < {{ iptables_rulesv6 }}"
+  changed_when: false
+  when:
+    - not is_container | bool
+
+- name: Reload iptables
+  ansible.builtin.shell: # noqa no-changed-when
+    cmd: "iptables-restore < {{ iptables_rulesv4 }}"
+
+- name: Reload ip6tables
+  ansible.builtin.shell: # noqa no-changed-when
+    cmd: "ip6tables-restore < {{ iptables_rulesv6 }}"

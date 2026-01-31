@@ -1,0 +1,18 @@
+---
+- name: Configure dns nameserver
+  ansible.builtin.copy:
+    content: |
+      {% for host in hardennanokvm_fw_dnsservers %}
+      nameserver {{ host }}
+      {% endfor %}
+    # https://github.com/sipeed/NanoKVM/issues/311#issuecomment-2658954062
+    # /etc/resolv.conf still get overwritten
+    # dest: /etc/resolv.conf
+    dest: /boot/resolv.conf
+    mode: "0644"
+    owner: "0"
+    group: "0"
+    # Module failed: Could not make backup of '/boot/resolv.conf' to '/boot/resolv.conf.2388.2026-01-25@12:18:59~': [Errno 22] Invalid argument: '/boot/resolv.conf.2388.2026-01-25@12:18:59~'
+    # backup: "{{ hardennanokvm_backup | default(false) }}"
+  notify:
+    - Mirror /boot/resolv.conf to /etc/resolv.conf

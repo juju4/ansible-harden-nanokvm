@@ -1,0 +1,60 @@
+---
+# IPv4 in /etc/init.d/S35iptables /etc/iptables.conf
+# No call for IPv6 without patching
+
+- name: Debug
+  ansible.builtin.debug:
+    var: "{{ item }}"
+  loop:
+    - ansible_facts.default_ipv4
+    - ansible_facts.eth0
+    - ansible_facts.all_ipv4_addresses
+
+- name: Ensure iptables directory exists
+  ansible.builtin.file:
+    dest: /etc/iptables
+    state: directory
+    mode: "0755"
+
+- name: Firewall IPv4
+  block:
+    - name: Iptables configuration file update
+      ansible.builtin.template:
+        src: "{{ hardennanokvm_fw_template_v4 }}"
+        dest: "{{ iptables_rulesv4 }}"
+        backup: "{{ hardennanokvm_backup | default(false) }}"
+        owner: "0"
+        group: "0"
+        mode: "0644"
+      notify:
+        - Ensure iptables v4 rules are correct
+        - Reload iptables
+
+- name: Firewall IPv6
+  when:
+    - hardennanokvm_fw6_enable | bool
+  block:
+    # busybox patch not supported, requires quiet argument
+    - name: Patch init files to support ip6tables
+      ansible.posix.patch:
+        src: etc-init.d-S35iptables.patch
+        dest: /
+        backup: "{{ hardennanokvm_backup | default(false) }}"
+      when: false
+    - name: Custom init files to support ip6tables
+      ansible.builtin.copy:
+        src: S35iptables
+        dest: /etc/init.d/S35iptables
+        mode: "0755"
+        backup: "{{ hardennanokvm_backup | default(false) }}"
+    - name: Ip6tables configuration file update
+      ansible.builtin.template:
+        src: "{{ hardennanokvm_fw_template_v6 }}"
+        dest: "{{ iptables_rulesv6 }}"
+        backup: "{{ hardennanokvm_backup | default(false) }}"
+        owner: "0"
+        group: "0"
+        mode: "0644"
+      notify:
+        - Ensure ip6tables rules are correct
+        - Reload ip6tables

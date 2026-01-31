@@ -1,0 +1,19 @@
+---
+- name: Configure network interfaces
+  ansible.builtin.template:
+    src: interfaces.j2
+    dest: /etc/network/interfaces
+    mode: "0644"
+    backup: "{{ hardennanokvm_backup | default(false) }}"
+  notify:
+    - Restart network
+
+- name: Check S30eth udhcpc script
+  ansible.builtin.stat:
+    path: /etc/init.d/S30eth
+  register: s30
+- name: Move S30eth udhcpc script
+  ansible.builtin.command: # noqa no-changed-when
+    cmd: mv /etc/init.d/S30eth /etc/init.d/DISABLED-S30eth
+  when:
+    - s30.stat.exists
