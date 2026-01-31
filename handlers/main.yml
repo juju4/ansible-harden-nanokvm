@@ -15,6 +15,7 @@
     state: restarted
   when:
     - not is_container | bool
+    - ansible_facts.distribution_release == "buildroot"
 
 - name: Reload systemd
   ansible.builtin.systemd:
@@ -28,6 +29,7 @@
     state: "restarted"
   when:
     - not is_container | bool
+    - ansible_facts.distribution_release == "buildroot"
     # if root connection, will lose it and playbook failed
     - false
 
