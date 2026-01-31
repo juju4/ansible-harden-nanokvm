@@ -27,5 +27,9 @@
             path: /run/sshd
             state: directory
             mode: "0755"
+        - name: Ensure iptables is present
+          ansible.builtin.package:
+            name: iptables
+            state: present
   roles:
     - juju4.harden_nanokvm
