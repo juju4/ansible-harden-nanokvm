@@ -12,6 +12,20 @@
       - 2620:fe::fe
     iptables_rulesv4: /etc/iptables.conf
     iptables_rulesv6: /etc/ip6tables.conf
+    is_container: false
+  pre_tasks:
+    - name: Debug | var ansible_virtualization_type
+      ansible.builtin.debug:
+        var: ansible_virtualization_type
+    - name: Set fact is_container
+      ansible.builtin.set_fact:
+        is_container: true
+      when: >
+        (ansible_virtualization_type is defined and
+          (ansible_virtualization_type == "docker" or ansible_virtualization_type == "containerd"
+           or ansible_virtualization_type == "container"
+          )
+        )
   tasks:
     - name: Fetch content /etc/resolv.conf
       ansible.builtin.slurp:
@@ -22,6 +36,9 @@
         that:
           - "item in dns['content'] | b64decode"
       loop: "{{ hardennanokvm_fw_dnsservers + hardennanokvm_fw6_dnsservers }}"
+      when:
+        - not is_container | bool
+        - ansible_facts.distribution_release == "buildroot"
 
     - name: Fetch content /etc/ssh/sshd_config
       ansible.builtin.slurp:
