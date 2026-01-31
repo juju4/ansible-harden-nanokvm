@@ -14,6 +14,10 @@
       when:
         - ansible_facts.os_family == 'Debian'
       block:
+        - name: Debian | Refresh apt cache
+          ansible.builtin.apt:
+            update_cache: yes
+            cache_valid_time: 3600
         - name: Ensure sshd is present
           ansible.builtin.package:
             name: openssh-server
