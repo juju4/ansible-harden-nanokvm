@@ -51,7 +51,11 @@
 - name: Reload iptables
   ansible.builtin.shell: # noqa no-changed-when
     cmd: "iptables-restore < {{ iptables_rulesv4 }}"
+  when:
+    - not is_container | bool
 
 - name: Reload ip6tables
   ansible.builtin.shell: # noqa no-changed-when
     cmd: "ip6tables-restore < {{ iptables_rulesv6 }}"
+  when:
+    - not is_container | bool
