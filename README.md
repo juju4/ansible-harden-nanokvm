@@ -52,8 +52,8 @@ TBD
 
 ## Resources
 
-* nameserver https://github.com/sipeed/NanoKVM/issues/210 https://github.com/sipeed/NanoKVM/issues/399 https://github.com/sipeed/NanoKVM/issues/311#issuecomment-2658954062
-* firewall https://github.com/sipeed/NanoKVM/issues/301#issuecomment-3172900815
+* nameserver <https://github.com/sipeed/NanoKVM/issues/210> <https://github.com/sipeed/NanoKVM/issues/399> <https://github.com/sipeed/NanoKVM/issues/311#issuecomment-2658954062>
+* firewall <https://github.com/sipeed/NanoKVM/issues/301#issuecomment-3172900815>
 
 ## License
 
