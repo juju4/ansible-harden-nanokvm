@@ -19,12 +19,14 @@
 -A INPUT -i eth0 -p tcp -m tcp -s 10.0.0.0/8 --dport 22 -j ACCEPT
 -A INPUT -i eth0 -p udp -m udp --dport 123 -j DROP
 -A INPUT -i eth0 -p igmp -d 224.0.0.1 -j DROP
+{% if hardennanokvm_broadcast is defined and hardennanokvm_broadcast | length > 0 %}
 -A INPUT -i eth0 -p udp -d {{ hardennanokvm_broadcast }} --dport 137 -j DROP
 -A INPUT -i eth0 -p udp -d {{ hardennanokvm_broadcast }} --dport 138 -j DROP
 -A INPUT -i eth0 -p udp -s {{ hardennanokvm_network }}/{{ hardennanokvm_prefix }} -d {{ hardennanokvm_broadcast }} --dport 3517 -j DROP
--A INPUT -i eth0 -p udp -s 0.0.0.0 --sport 68 -d 255.255.255.255 --dport 67 -j ACCEPT
 -A INPUT -i eth0 -p udp --sport 68 -d {{ hardennanokvm_broadcast }} --dport 67 -j ACCEPT
 -A INPUT -i eth0 -p udp --sport 67 -d {{ hardennanokvm_broadcast }} --dport 68 -j ACCEPT
+{% endif %}
+-A INPUT -i eth0 -p udp -s 0.0.0.0 --sport 68 -d 255.255.255.255 --dport 67 -j ACCEPT
 {% if hardennanokvm_fw_gw is defined and hardennanokvm_fw_gw | length > 0 %}
 -A OUTPUT -o eth0 -p udp --sport 68 -d {{ hardennanokvm_fw_gw }} --dport 67 -j ACCEPT
 {% endif %}
