@@ -25,7 +25,7 @@ hardennanokvm_sshd_enable: true
 hardennanokvm_sshd_template: sshd_config.j2
 
 # if false, remove dhcp option or post net if-up
-# hardennanokvm_defaultroute_enable: true
+hardennanokvm_defaultroute_enable: true
 # dhcp or fixed IP address (with or without default route)
 hardennanokvm_dhcp_enable: true
 hardennanokvm_net_ip: "{{ ansible_facts['default_ipv4'].address | default(ansible_facts.eth0.ipv4.address) }}"
