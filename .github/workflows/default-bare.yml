@@ -131,7 +131,7 @@ jobs:
         run: |
           cat /etc/environment
           cat /etc/resolv.conf
-          cat /etc/ssh/sshd_config
+          sudo cat /etc/ssh/sshd_config
           cat /etc/iptables/rules.v4
           cat /etc/iptables/rules.v6
           cat /etc/udhcpc/udhcpc.conf
