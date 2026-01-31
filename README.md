@@ -5,7 +5,7 @@
 
 A simple ansible role to do system hardening on [NanoKVM](https://github.com/sipeed/NanoKVM/). Mostly
 
-* Firewall enforcing restricted network trafic
+* Firewall enforcing restricted network traffic
 * Configure custom DNS server
 * Configure more restricted ssh config
 
