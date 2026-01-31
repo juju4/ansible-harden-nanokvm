@@ -8,6 +8,9 @@
     group: "0"
     backup: "{{ hardennanokvm_backup | default(false) }}"
     remote_src: true
+  when:
+    - not is_container | bool
+    - ansible_facts.distribution_release == "buildroot"
 
 - name: Restart network
   ansible.builtin.service:
