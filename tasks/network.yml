@@ -1,4 +1,10 @@
 ---
+- name: Ensure /etc/network exists
+  ansible.builtin.file:
+    path: /etc/network
+    state: directory
+    mode: "0755"
+
 - name: Configure network interfaces
   ansible.builtin.template:
     src: interfaces.j2
