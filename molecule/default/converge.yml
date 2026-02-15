@@ -6,6 +6,8 @@
     https_proxy: "{{ lookup('env', 'https_proxy') }}"
     no_proxy: "{{ lookup('env', 'no_proxy') }}"
   remote_user: root
+  vars:
+    hardennanokvm_syslog_server: 192.168.1.254
   pre_tasks:
     - name: Debug | var ansible_facts['virtualization_type']
       ansible.builtin.debug:
@@ -31,5 +33,8 @@
           ansible.builtin.package:
             name: iptables
             state: present
+        - name: Ensure busybox syslogd is present
+          ansible.builtin.package:
+            name: busybox-syslogd
   roles:
     - juju4.harden_nanokvm

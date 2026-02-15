@@ -38,3 +38,6 @@
   when:
     - hardennanokvm_proxy_enable | bool
     - hardennanokvm_env | length > 0
+
+- name: Import logging
+  ansible.builtin.import_tasks: logging.yml

@@ -137,3 +137,8 @@ jobs:
           cat /etc/udhcpc/udhcpc.conf
         if: ${{ always() }}
         continue-on-error: true
+      - name: After script - logs
+        run: |
+          sudo tail -n500 /var/log/messages
+        if: ${{ always() }}
+        continue-on-error: true

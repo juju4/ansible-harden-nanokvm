@@ -59,3 +59,11 @@
     cmd: "ip6tables-restore < {{ iptables_rulesv6 }}"
   when:
     - not is_container | bool
+
+- name: Restart syslogd
+  ansible.builtin.service:
+    name: S01syslogd
+    state: restarted
+  when:
+    - not is_container | bool
+    - ansible_facts.distribution_release == "buildroot"

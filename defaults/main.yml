@@ -44,6 +44,13 @@ hardennanokvm_env:
   - { re: ^https_proxy=.*, l: "https_proxy={{ hardennanokvm_proxy_url }}" }
   - { re: ^no_proxy=.*, l: "no_proxy={{ hardennanokvm_no_proxy | default('127.0.0.1,::1,localhost,10.0.0.0/8,192.168.0.0/16') }}" }
 
+# default busybox-syslogd 200KB, take 10MB
+hardennanokvm_syslog_size: 10240
+hardennanokvm_syslog_rotate: 10
+# remote syslog
+hardennanokvm_syslog_server: ''
+# hardennanokvm_syslog_server: 192.168.1.254
+
 hardennanokvm_backup: true
 
 is_container: false

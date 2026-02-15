@@ -1,0 +1,16 @@
+---
+
+- name: Ensure /etc/init.d/S01syslogd permissions
+  ansible.builtin.file:
+    path: /etc/init.d/S01syslogd
+    mode: '0755'
+
+- name: Configure busybox syslogd
+  ansible.builtin.lineinfile:
+    path: /etc/default/syslogd
+    regexp: '^SYSLOGD_ARGS=".*"'
+    line: 'SYSLOGD_ARGS="-s {{ hardennanokvm_syslog_size }} -b {{ hardennanokvm_syslog_rotate }}{% if hardennanokvm_syslog_server | length > 0 %} -L -R {{ hardennanokvm_syslog_server }}{% endif %}"'
+    mode: '0644'
+    create: true
+  notify:
+    - Restart syslogd
