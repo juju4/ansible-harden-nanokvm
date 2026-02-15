@@ -4,6 +4,8 @@
   ansible.builtin.file:
     path: /etc/init.d/S01syslogd
     mode: '0755'
+  when:
+    - ansible_facts.distribution_release == "buildroot"
 
 - name: Configure busybox syslogd
   ansible.builtin.lineinfile:
